@@ -11,8 +11,6 @@ const currentTime = document.getElementById("current-time");
 const equipmentButtonArea = document.getElementById("equipment-button-area");
 const actionButtonArea = document.getElementById("action-button-area");
 
-const selectedEquipment = document.getElementById("selected-equipment");
-const selectedAction = document.getElementById("selected-action");
 
 const recordButton = document.getElementById("record-button");
 const settingsButton = document.getElementById("settings-button");
@@ -196,7 +194,6 @@ function loadEquipmentButtons() {
 
                 button.addEventListener("click", function () {
                     selectedEquipmentName = equipment.name;
-                    selectedEquipment.textContent = equipment.name;
 
                     document
                         .querySelectorAll(".equipment-button")
@@ -234,7 +231,6 @@ function loadActionButtons() {
 
                 button.addEventListener("click", function () {
                     selectedActionName = action.name;
-                    selectedAction.textContent = action.name;
 
                     document
                         .querySelectorAll(".action-button")
@@ -305,7 +301,6 @@ recordButton.addEventListener("click", function () {
 
 function clearActionSelection() {
     selectedActionName = "";
-    selectedAction.textContent = "未選択";
 
     document
         .querySelectorAll(".action-button")
@@ -680,14 +675,12 @@ function updateMasterItem(storeName, id, newName, reloadFunction) {
             selectedEquipmentName === oldName) {
 
             selectedEquipmentName = newName;
-            selectedEquipment.textContent = newName;
         }
 
         if (storeName === ACTION_STORE &&
             selectedActionName === oldName) {
 
             selectedActionName = newName;
-            selectedAction.textContent = newName;
         }
     };
 
@@ -730,14 +723,12 @@ function deleteMasterItem(storeName, id, reloadFunction) {
             selectedEquipmentName === deletedName) {
 
             selectedEquipmentName = "";
-            selectedEquipment.textContent = "未選択";
         }
 
         if (storeName === ACTION_STORE &&
             selectedActionName === deletedName) {
 
             selectedActionName = "";
-            selectedAction.textContent = "未選択";
         }
 
         reloadFunction();
@@ -780,7 +771,6 @@ async function validateCurrentSelections() {
         !equipments.some((item) => item.name === selectedEquipmentName)
     ) {
         selectedEquipmentName = "";
-        selectedEquipment.textContent = "未選択";
     }
 
     if (
@@ -788,7 +778,6 @@ async function validateCurrentSelections() {
         !actions.some((item) => item.name === selectedActionName)
     ) {
         selectedActionName = "";
-        selectedAction.textContent = "未選択";
     }
 
     updateRecordButtonState();
