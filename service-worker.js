@@ -1,15 +1,14 @@
-const CACHE_NAME = "equipment-worklog-cache-v4";
+const CACHE_NAME = "equipment-worklog-cache-v6";
 
 const CORE_FILES = [
     "./",
     "./index.html",
-    "./style.css?v=4",
-    "./app.js?v=4",
+    "./style.css?v=6",
+    "./app.js?v=6",
     "./manifest.json",
     "./icons/icon.svg"
 ];
 
-// 初回インストール
 self.addEventListener("install", function (event) {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -18,7 +17,6 @@ self.addEventListener("install", function (event) {
     );
 });
 
-// 新しいService Workerを即時有効化し、旧キャッシュを削除
 self.addEventListener("activate", function (event) {
     event.waitUntil(
         caches.keys()
@@ -33,7 +31,7 @@ self.addEventListener("activate", function (event) {
     );
 });
 
-// 更新反映を優先：ネットワーク優先、通信できないときだけキャッシュ
+// 更新反映を優先：オンライン時はネットワーク、オフライン時のみキャッシュ
 self.addEventListener("fetch", function (event) {
     if (event.request.method !== "GET") {
         return;

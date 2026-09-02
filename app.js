@@ -1,6 +1,6 @@
 // ============================================================
 // 設備別 行動記録 PWA
-// 新規アプリ用：旧PWAとは別のIndexedDBを使用
+// 分類No.で設備と行動を紐づける版
 // ============================================================
 
 // -------------------------
@@ -10,7 +10,6 @@ const currentTime = document.getElementById("current-time");
 
 const equipmentButtonArea = document.getElementById("equipment-button-area");
 const actionButtonArea = document.getElementById("action-button-area");
-
 
 const recordButton = document.getElementById("record-button");
 const settingsButton = document.getElementById("settings-button");
@@ -25,9 +24,11 @@ const equipmentSettingsList = document.getElementById("equipment-settings-list")
 const actionSettingsList = document.getElementById("action-settings-list");
 
 const newEquipmentName = document.getElementById("new-equipment-name");
+const newEquipmentGroup = document.getElementById("new-equipment-group");
 const addEquipmentButton = document.getElementById("add-equipment-button");
 
 const newActionName = document.getElementById("new-action-name");
+const newActionGroup = document.getElementById("new-action-group");
 const addActionButton = document.getElementById("add-action-button");
 
 const workerNameInput = document.getElementById("worker-name");
@@ -41,14 +42,16 @@ const storageUsage = document.getElementById("storage-usage");
 // 選択状態
 // -------------------------
 let selectedEquipmentName = "";
+let selectedEquipmentGroup = null;
 let selectedActionName = "";
+let selectedActionGroup = null;
 
 // -------------------------
 // IndexedDB
-// 旧アプリと名前を変えて完全分離
+// v2：設備・行動マスタにgroupを追加
 // -------------------------
 const DB_NAME = "EquipmentWorkLogDB";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 const LOG_STORE = "workLogs";
 const EQUIPMENT_STORE = "equipments";
@@ -58,29 +61,28 @@ let db = null;
 
 // -------------------------
 // 初期値
-// 必要に応じて設定画面で変更可能
+// 既存の使い方を壊さないため初期分類はすべて1
 // -------------------------
 const DEFAULT_EQUIPMENTS = [
-    "設備A",
-    "設備B",
-    "設備C",
-    "設備D"
+    { name: "設備A", group: 1 },
+    { name: "設備B", group: 1 },
+    { name: "設備C", group: 1 },
+    { name: "設備D", group: 1 }
 ];
 
 const DEFAULT_ACTIONS = [
-    "加工",
-    "段取り",
-    "測定",
-    "補正",
-    "清掃",
-    "トラブル",
-    "待機",
-    "その他"
+    { name: "加工", group: 1 },
+    { name: "段取り", group: 1 },
+    { name: "測定", group: 1 },
+    { name: "補正", group: 1 },
+    { name: "清掃", group: 1 },
+    { name: "トラブル", group: 1 },
+    { name: "待機", group: 1 },
+    { name: "その他", group: 1 }
 ];
 
 // ============================================================
 // 作業者設定
-// 端末ごとにlocalStorageへ保存
 // ============================================================
 const WORKER_NAME_KEY = "EquipmentWorkLogWorkerName";
 
@@ -138,13 +140,14 @@ updateClock();
 setInterval(updateClock, 1000);
 
 // ============================================================
-// IndexedDBを開く
+// IndexedDB
 // ============================================================
 function openDatabase() {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onupgradeneeded = function (event) {
         const upgradeDb = event.target.result;
+        const transaction = event.target.transaction;
 
         if (!upgradeDb.objectStoreNames.contains(LOG_STORE)) {
             const logStore = upgradeDb.createObjectStore(LOG_STORE, {
@@ -169,6 +172,35 @@ function openDatabase() {
                 autoIncrement: true
             });
         }
+
+        // v1からv2へ更新する既存端末では、分類No.が無い項目を1にする
+        if (event.oldVersion < 2) {
+            [EQUIPMENT_STORE, ACTION_STORE].forEach(function (storeName) {
+                if (!upgradeDb.objectStoreNames.contains(storeName)) {
+                    return;
+                }
+
+                const store = transaction.objectStore(storeName);
+                const cursorRequest = store.openCursor();
+
+                cursorRequest.onsuccess = function (cursorEvent) {
+                    const cursor = cursorEvent.target.result;
+
+                    if (!cursor) {
+                        return;
+                    }
+
+                    const item = cursor.value;
+
+                    if (!isValidGroup(item.group)) {
+                        item.group = 1;
+                        cursor.update(item);
+                    }
+
+                    cursor.continue();
+                };
+            });
+        }
     };
 
     request.onsuccess = function (event) {
@@ -189,7 +221,7 @@ function openDatabase() {
 }
 
 // ============================================================
-// 初期マスタ作成
+// 初期マスタ
 // ============================================================
 async function initializeMasterData() {
     try {
@@ -203,7 +235,7 @@ async function initializeMasterData() {
     }
 }
 
-function initializeStoreIfEmpty(storeName, names) {
+function initializeStoreIfEmpty(storeName, items) {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(storeName, "readwrite");
         const store = transaction.objectStore(storeName);
@@ -211,8 +243,11 @@ function initializeStoreIfEmpty(storeName, names) {
 
         countRequest.onsuccess = function () {
             if (countRequest.result === 0) {
-                names.forEach((name) => {
-                    store.add({ name });
+                items.forEach((item) => {
+                    store.add({
+                        name: item.name,
+                        group: normalizeGroup(item.group)
+                    });
                 });
             }
         };
@@ -237,13 +272,22 @@ function loadEquipmentButtons() {
                 button.type = "button";
                 button.className = "equipment-button";
                 button.textContent = equipment.name;
+                applyGroupClass(button, equipment.group);
 
-                if (equipment.name === selectedEquipmentName) {
+                if (
+                    equipment.name === selectedEquipmentName &&
+                    normalizeGroup(equipment.group) === selectedEquipmentGroup
+                ) {
                     button.classList.add("selected");
                 }
 
                 button.addEventListener("click", function () {
                     selectedEquipmentName = equipment.name;
+                    selectedEquipmentGroup = normalizeGroup(equipment.group);
+
+                    // 設備変更時は必ず行動選択を解除
+                    selectedActionName = "";
+                    selectedActionGroup = null;
 
                     document
                         .querySelectorAll(".equipment-button")
@@ -251,6 +295,7 @@ function loadEquipmentButtons() {
 
                     button.classList.add("selected");
 
+                    loadActionButtons();
                     updateRecordButtonState();
                 });
 
@@ -262,25 +307,49 @@ function loadEquipmentButtons() {
 
 // ============================================================
 // 行動ボタン
+// 選択設備と同じ分類No.のみ表示
 // ============================================================
 function loadActionButtons() {
+    actionButtonArea.innerHTML = "";
+
+    if (selectedEquipmentName === "" || selectedEquipmentGroup === null) {
+        showActionGuidance("対象設備を選択してください。");
+        updateRecordButtonState();
+        return;
+    }
+
     getAllFromStore(ACTION_STORE)
         .then((actions) => {
-            actionButtonArea.innerHTML = "";
+            const filteredActions = actions.filter(
+                (action) => normalizeGroup(action.group) === selectedEquipmentGroup
+            );
 
-            actions.forEach((action) => {
+            if (filteredActions.length === 0) {
+                showActionGuidance(
+                    `分類No.${selectedEquipmentGroup} の行動が設定されていません。`
+                );
+                updateRecordButtonState();
+                return;
+            }
+
+            filteredActions.forEach((action) => {
                 const button = document.createElement("button");
 
                 button.type = "button";
                 button.className = "action-button";
                 button.textContent = action.name;
+                applyGroupClass(button, action.group);
 
-                if (action.name === selectedActionName) {
+                if (
+                    action.name === selectedActionName &&
+                    normalizeGroup(action.group) === selectedActionGroup
+                ) {
                     button.classList.add("selected");
                 }
 
                 button.addEventListener("click", function () {
                     selectedActionName = action.name;
+                    selectedActionGroup = normalizeGroup(action.group);
 
                     document
                         .querySelectorAll(".action-button")
@@ -297,38 +366,51 @@ function loadActionButtons() {
         .catch((error) => console.error("行動読込エラー", error));
 }
 
+function showActionGuidance(message) {
+    const guidance = document.createElement("div");
+    guidance.className = "action-guidance";
+    guidance.textContent = message;
+    actionButtonArea.appendChild(guidance);
+}
+
 // ============================================================
-// 記録ボタン状態
+// 記録ボタン
 // ============================================================
 function updateRecordButtonState() {
     recordButton.disabled =
         selectedEquipmentName === "" ||
-        selectedActionName === "";
+        selectedEquipmentGroup === null ||
+        selectedActionName === "" ||
+        selectedActionGroup === null ||
+        selectedEquipmentGroup !== selectedActionGroup;
 }
 
 // ============================================================
 // 記録
-// 設備は記録後も保持、行動だけ解除する
+// 設備は保持、行動のみ解除
 // ============================================================
 recordButton.addEventListener("click", function () {
-    if (selectedEquipmentName === "") {
+    if (selectedEquipmentName === "" || selectedEquipmentGroup === null) {
         alert("対象設備を選択してください。");
         return;
     }
 
-    if (selectedActionName === "") {
+    if (selectedActionName === "" || selectedActionGroup === null) {
         alert("行動を選択してください。");
+        return;
+    }
+
+    if (selectedEquipmentGroup !== selectedActionGroup) {
+        alert("対象設備と行動の分類No.が一致していません。");
+        clearActionSelection();
         return;
     }
 
     const now = new Date();
 
-    const date = formatDate(now);
-    const time = formatTime(now);
-
     const logData = {
-        date,
-        time,
+        date: formatDate(now),
+        time: formatTime(now),
         equipment: selectedEquipmentName,
         action: selectedActionName,
         timestamp: now.getTime()
@@ -351,6 +433,7 @@ recordButton.addEventListener("click", function () {
 
 function clearActionSelection() {
     selectedActionName = "";
+    selectedActionGroup = null;
 
     document
         .querySelectorAll(".action-button")
@@ -416,7 +499,7 @@ function displayHistory(logs) {
 }
 
 // ============================================================
-// 直前記録の取り消し
+// 直前記録取り消し
 // ============================================================
 undoButton.addEventListener("click", function () {
     getAllFromStore(LOG_STORE)
@@ -462,7 +545,6 @@ function deleteLog(id) {
 
 // ============================================================
 // CSV出力
-// 全期間を出力
 // ============================================================
 csvButton.addEventListener("click", function () {
     getAllFromStore(LOG_STORE)
@@ -492,7 +574,6 @@ csvButton.addEventListener("click", function () {
             });
 
             const now = new Date();
-
             const workerNameForFile = getWorkerNameForFile();
 
             const fileName =
@@ -526,20 +607,19 @@ function updateStorageStatus() {
         return;
     }
 
-    // 記録件数
     const transaction = db.transaction(LOG_STORE, "readonly");
     const store = transaction.objectStore(LOG_STORE);
     const countRequest = store.count();
 
     countRequest.onsuccess = function () {
-        recordCount.textContent = countRequest.result.toLocaleString("ja-JP") + " 件";
+        recordCount.textContent =
+            countRequest.result.toLocaleString("ja-JP") + " 件";
     };
 
     countRequest.onerror = function () {
         recordCount.textContent = "取得失敗";
     };
 
-    // 使用容量（Storage APIの推定値）
     if (navigator.storage && navigator.storage.estimate) {
         navigator.storage.estimate()
             .then(function (estimate) {
@@ -555,14 +635,8 @@ function updateStorageStatus() {
 }
 
 function formatBytes(bytes) {
-    if (bytes < 1024) {
-        return bytes + " B";
-    }
-
-    if (bytes < 1024 * 1024) {
-        return (bytes / 1024).toFixed(1) + " KB";
-    }
-
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
     if (bytes < 1024 * 1024 * 1024) {
         return (bytes / (1024 * 1024)).toFixed(2) + " MB";
     }
@@ -580,10 +654,10 @@ settingsButton.addEventListener("click", function () {
     updateStorageStatus();
 });
 
-settingsCloseButton.addEventListener("click", function () {
+settingsCloseButton.addEventListener("click", async function () {
     settingsScreen.classList.add("hidden");
 
-    validateCurrentSelections();
+    await validateCurrentSelections();
 
     loadEquipmentButtons();
     loadActionButtons();
@@ -615,6 +689,7 @@ addEquipmentButton.addEventListener("click", function () {
     addMasterItem(
         EQUIPMENT_STORE,
         newEquipmentName,
+        newEquipmentGroup,
         loadEquipmentSettings
     );
 });
@@ -644,6 +719,7 @@ addActionButton.addEventListener("click", function () {
     addMasterItem(
         ACTION_STORE,
         newActionName,
+        newActionGroup,
         loadActionSettings
     );
 });
@@ -655,11 +731,34 @@ function createSettingRow(item, storeName, reloadFunction) {
     const row = document.createElement("div");
     row.className = "setting-item";
 
-    const input = document.createElement("input");
-    input.type = "text";
-    input.className = "setting-input";
-    input.value = item.name;
-    input.maxLength = 30;
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.className = "setting-input";
+    nameInput.value = item.name;
+    nameInput.maxLength = 30;
+
+    const groupInput = document.createElement("input");
+    groupInput.type = "number";
+    groupInput.className = "setting-group-input";
+    groupInput.min = "1";
+    groupInput.max = "999";
+    groupInput.step = "1";
+    groupInput.value = normalizeGroup(item.group);
+    groupInput.setAttribute("aria-label", "分類番号");
+    applyGroupClass(groupInput, item.group);
+
+    groupInput.addEventListener("input", function () {
+        const group = parseGroupInput(groupInput.value);
+
+        if (group === null) {
+            for (let i = 1; i <= 8; i++) {
+                groupInput.classList.remove("group-" + i);
+            }
+            return;
+        }
+
+        applyGroupClass(groupInput, group);
+    });
 
     const saveButton = document.createElement("button");
     saveButton.type = "button";
@@ -667,10 +766,16 @@ function createSettingRow(item, storeName, reloadFunction) {
     saveButton.textContent = "変更";
 
     saveButton.addEventListener("click", async function () {
-        const newName = input.value.trim();
+        const newName = nameInput.value.trim();
+        const newGroup = parseGroupInput(groupInput.value);
 
         if (newName === "") {
             alert("名称を入力してください。");
+            return;
+        }
+
+        if (newGroup === null) {
+            alert("分類No.は1～999の整数で入力してください。");
             return;
         }
 
@@ -689,6 +794,7 @@ function createSettingRow(item, storeName, reloadFunction) {
             storeName,
             item.id,
             newName,
+            newGroup,
             reloadFunction
         );
     });
@@ -712,7 +818,8 @@ function createSettingRow(item, storeName, reloadFunction) {
         }
     });
 
-    row.appendChild(input);
+    row.appendChild(nameInput);
+    row.appendChild(groupInput);
     row.appendChild(saveButton);
     row.appendChild(deleteButton);
 
@@ -722,11 +829,22 @@ function createSettingRow(item, storeName, reloadFunction) {
 // -------------------------
 // マスタ追加
 // -------------------------
-async function addMasterItem(storeName, inputElement, reloadFunction) {
-    const name = inputElement.value.trim();
+async function addMasterItem(
+    storeName,
+    nameInputElement,
+    groupInputElement,
+    reloadFunction
+) {
+    const name = nameInputElement.value.trim();
+    const group = parseGroupInput(groupInputElement.value);
 
     if (name === "") {
         alert("名称を入力してください。");
+        return;
+    }
+
+    if (group === null) {
+        alert("分類No.は1～999の整数で入力してください。");
         return;
     }
 
@@ -740,10 +858,10 @@ async function addMasterItem(storeName, inputElement, reloadFunction) {
     const transaction = db.transaction(storeName, "readwrite");
     const store = transaction.objectStore(storeName);
 
-    store.add({ name });
+    store.add({ name, group });
 
     transaction.oncomplete = function () {
-        inputElement.value = "";
+        nameInputElement.value = "";
         reloadFunction();
 
         if (storeName === EQUIPMENT_STORE) {
@@ -761,10 +879,19 @@ async function addMasterItem(storeName, inputElement, reloadFunction) {
 // -------------------------
 // マスタ変更
 // -------------------------
-function updateMasterItem(storeName, id, newName, reloadFunction) {
+function updateMasterItem(
+    storeName,
+    id,
+    newName,
+    newGroup,
+    reloadFunction
+) {
     const transaction = db.transaction(storeName, "readwrite");
     const store = transaction.objectStore(storeName);
     const request = store.get(id);
+
+    let oldName = "";
+    let oldGroup = null;
 
     request.onsuccess = function () {
         const item = request.result;
@@ -774,28 +901,43 @@ function updateMasterItem(storeName, id, newName, reloadFunction) {
             return;
         }
 
-        const oldName = item.name;
+        oldName = item.name;
+        oldGroup = normalizeGroup(item.group);
+
         item.name = newName;
+        item.group = newGroup;
+
         store.put(item);
-
-        if (storeName === EQUIPMENT_STORE &&
-            selectedEquipmentName === oldName) {
-
-            selectedEquipmentName = newName;
-        }
-
-        if (storeName === ACTION_STORE &&
-            selectedActionName === oldName) {
-
-            selectedActionName = newName;
-        }
     };
 
     transaction.oncomplete = function () {
+        if (
+            storeName === EQUIPMENT_STORE &&
+            selectedEquipmentName === oldName &&
+            selectedEquipmentGroup === oldGroup
+        ) {
+            selectedEquipmentName = newName;
+            selectedEquipmentGroup = newGroup;
+
+            // 設備の分類変更時は選択中行動を必ず解除
+            clearActionSelection();
+        }
+
+        if (
+            storeName === ACTION_STORE &&
+            selectedActionName === oldName &&
+            selectedActionGroup === oldGroup
+        ) {
+            selectedActionName = "";
+
+            selectedActionGroup = null;
+        }
+
         reloadFunction();
 
         if (storeName === EQUIPMENT_STORE) {
             loadEquipmentButtons();
+            loadActionButtons();
         } else if (storeName === ACTION_STORE) {
             loadActionButtons();
         }
@@ -817,31 +959,41 @@ function deleteMasterItem(storeName, id, reloadFunction) {
     const getRequest = store.get(id);
 
     let deletedName = "";
+    let deletedGroup = null;
 
     getRequest.onsuccess = function () {
         if (getRequest.result) {
             deletedName = getRequest.result.name;
+            deletedGroup = normalizeGroup(getRequest.result.group);
             store.delete(id);
         }
     };
 
     transaction.oncomplete = function () {
-        if (storeName === EQUIPMENT_STORE &&
-            selectedEquipmentName === deletedName) {
-
+        if (
+            storeName === EQUIPMENT_STORE &&
+            selectedEquipmentName === deletedName &&
+            selectedEquipmentGroup === deletedGroup
+        ) {
             selectedEquipmentName = "";
+            selectedEquipmentGroup = null;
+            clearActionSelection();
         }
 
-        if (storeName === ACTION_STORE &&
-            selectedActionName === deletedName) {
-
+        if (
+            storeName === ACTION_STORE &&
+            selectedActionName === deletedName &&
+            selectedActionGroup === deletedGroup
+        ) {
             selectedActionName = "";
+            selectedActionGroup = null;
         }
 
         reloadFunction();
 
         if (storeName === EQUIPMENT_STORE) {
             loadEquipmentButtons();
+            loadActionButtons();
         } else if (storeName === ACTION_STORE) {
             loadActionButtons();
         }
@@ -867,31 +1019,80 @@ async function masterNameExists(storeName, name, excludeId = null) {
 }
 
 // ============================================================
-// 設定変更後の選択状態確認
+// 選択状態の整合性確認
 // ============================================================
 async function validateCurrentSelections() {
     const equipments = await getAllFromStore(EQUIPMENT_STORE);
     const actions = await getAllFromStore(ACTION_STORE);
 
-    if (
-        selectedEquipmentName !== "" &&
-        !equipments.some((item) => item.name === selectedEquipmentName)
-    ) {
+    const selectedEquipmentExists = equipments.some((item) =>
+        item.name === selectedEquipmentName &&
+        normalizeGroup(item.group) === selectedEquipmentGroup
+    );
+
+    if (selectedEquipmentName !== "" && !selectedEquipmentExists) {
         selectedEquipmentName = "";
+        selectedEquipmentGroup = null;
+        selectedActionName = "";
+        selectedActionGroup = null;
     }
 
-    if (
-        selectedActionName !== "" &&
-        !actions.some((item) => item.name === selectedActionName)
-    ) {
+    const selectedActionExists = actions.some((item) =>
+        item.name === selectedActionName &&
+        normalizeGroup(item.group) === selectedActionGroup &&
+        selectedActionGroup === selectedEquipmentGroup
+    );
+
+    if (selectedActionName !== "" && !selectedActionExists) {
         selectedActionName = "";
+        selectedActionGroup = null;
     }
 
     updateRecordButtonState();
 }
 
 // ============================================================
-// 共通：Object Store全件取得
+// 分類No. 色分け
+// 1～8を固定色として、9以上は循環利用する
+// ============================================================
+function getGroupClass(group) {
+    const normalizedGroup = ((normalizeGroup(group) - 1) % 8) + 1;
+    return "group-" + normalizedGroup;
+}
+
+function applyGroupClass(element, group) {
+    for (let i = 1; i <= 8; i++) {
+        element.classList.remove("group-" + i);
+    }
+
+    element.classList.add(getGroupClass(group));
+}
+
+// ============================================================
+// 分類No.共通
+// ============================================================
+function isValidGroup(value) {
+    const n = Number(value);
+
+    return Number.isInteger(n) && n >= 1 && n <= 999;
+}
+
+function normalizeGroup(value) {
+    return isValidGroup(value) ? Number(value) : 1;
+}
+
+function parseGroupInput(value) {
+    const n = Number(value);
+
+    if (!Number.isInteger(n) || n < 1 || n > 999) {
+        return null;
+    }
+
+    return n;
+}
+
+// ============================================================
+// Object Store全件取得
 // ============================================================
 function getAllFromStore(storeName) {
     return new Promise((resolve, reject) => {
@@ -910,7 +1111,7 @@ function getAllFromStore(storeName) {
 }
 
 // ============================================================
-// 共通：日時
+// 日時
 // ============================================================
 function formatDate(date) {
     const yyyy = date.getFullYear();
@@ -937,7 +1138,7 @@ function formatTimeCompact(date) {
 }
 
 // ============================================================
-// 共通：CSV
+// CSV
 // ============================================================
 function escapeCSV(value) {
     if (value === null || value === undefined) {
@@ -949,15 +1150,36 @@ function escapeCSV(value) {
     return `"${text}"`;
 }
 
+// 新規追加用の分類No.入力欄も色分け
+function initializeNewGroupInputColors() {
+    [newEquipmentGroup, newActionGroup].forEach(function (input) {
+        applyGroupClass(input, input.value);
+
+        input.addEventListener("input", function () {
+            const group = parseGroupInput(input.value);
+
+            if (group === null) {
+                for (let i = 1; i <= 8; i++) {
+                    input.classList.remove("group-" + i);
+                }
+                return;
+            }
+
+            applyGroupClass(input, group);
+        });
+    });
+}
+
 // ============================================================
 // 起動
 // ============================================================
 openDatabase();
 updateRecordButtonState();
 loadWorkerName();
+initializeNewGroupInputColors();
 
 // ============================================================
-// Service Worker登録
+// Service Worker
 // ============================================================
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {

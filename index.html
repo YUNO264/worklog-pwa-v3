@@ -6,7 +6,7 @@
 
     <title>設備別 行動記録</title>
 
-    <link rel="stylesheet" href="./style.css?v=4">
+    <link rel="stylesheet" href="./style.css?v=6">
     <link rel="manifest" href="./manifest.json">
 
     <meta name="theme-color" content="#ffffff">
@@ -69,7 +69,6 @@
                 </button>
             </div>
 
-            
             <section class="settings-section">
                 <h3>作業者設定</h3>
 
@@ -91,8 +90,15 @@
                 </div>
             </section>
 
-<section class="settings-section">
+            <section class="settings-section">
                 <h3>設備設定</h3>
+
+                <div class="setting-column-header">
+                    <span>設備名</span>
+                    <span>分類No.</span>
+                    <span></span>
+                    <span></span>
+                </div>
 
                 <div id="equipment-settings-list"></div>
 
@@ -104,6 +110,17 @@
                         maxlength="30"
                     >
 
+                    <input
+                        type="number"
+                        id="new-equipment-group"
+                        class="group-number-input"
+                        min="1"
+                        max="999"
+                        step="1"
+                        value="1"
+                        aria-label="設備の分類番号"
+                    >
+
                     <button id="add-equipment-button">
                         追加
                     </button>
@@ -112,6 +129,13 @@
 
             <section class="settings-section">
                 <h3>行動設定</h3>
+
+                <div class="setting-column-header">
+                    <span>行動名</span>
+                    <span>分類No.</span>
+                    <span></span>
+                    <span></span>
+                </div>
 
                 <div id="action-settings-list"></div>
 
@@ -123,13 +147,23 @@
                         maxlength="30"
                     >
 
+                    <input
+                        type="number"
+                        id="new-action-group"
+                        class="group-number-input"
+                        min="1"
+                        max="999"
+                        step="1"
+                        value="1"
+                        aria-label="行動の分類番号"
+                    >
+
                     <button id="add-action-button">
                         追加
                     </button>
                 </div>
             </section>
 
-            
             <section class="settings-section storage-status-section">
                 <h3>データ保存状況</h3>
 
@@ -150,14 +184,15 @@
                 </div>
             </section>
 
-
             <p class="settings-note">
-                ※ 設備・行動の追加／削除により、選択ボタンの個数を変更できます。
-                過去の行動記録は、設備・行動の設定を削除しても残ります。
+                ※ 対象設備を選択すると、同じ「分類No.」の行動だけが表示されます。<br>
+                例：設備A＝1、設備B＝1、設備C＝2／セット＝1、段取り＝1、加工＝2、手替え＝2 の場合、
+                設備A・Bでは「セット・段取り」、設備Cでは「加工・手替え」のみ選択できます。<br>
+                ※ 設備・行動の設定を変更・削除しても、過去の行動記録は残ります。
             </p>
         </div>
     </div>
 
-    <script src="./app.js?v=4"></script>
+    <script src="./app.js?v=6"></script>
 </body>
 </html>

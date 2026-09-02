@@ -80,12 +80,19 @@ h1 {
 
 .equipment-button.selected,
 .action-button.selected {
-    background-color: #1976d2;
-    border-color: #1976d2;
     color: #ffffff;
     font-weight: 700;
 }
 
+.action-guidance {
+    grid-column: 1 / -1;
+    padding: 13px 10px;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+    color: #666666;
+    font-size: 14px;
+    text-align: center;
+}
 
 .record-button {
     width: 100%;
@@ -234,55 +241,92 @@ h1 {
     font-size: 18px;
 }
 
+.setting-column-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 64px 54px 54px;
+    gap: 6px;
+    margin-bottom: 5px;
+    padding: 0 2px;
+    color: #666666;
+    font-size: 11px;
+    text-align: center;
+}
+
+.setting-column-header span:first-child {
+    text-align: left;
+}
+
 .setting-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 64px 54px 54px;
     align-items: center;
-    gap: 7px;
+    gap: 6px;
     margin-bottom: 8px;
 }
 
 .setting-input {
     min-width: 0;
-    flex: 1;
-    padding: 9px 10px;
+    width: 100%;
+    padding: 9px 8px;
     border: 1px solid #cccccc;
     border-radius: 8px;
-    font-size: 15px;
+    font-size: 14px;
+}
+
+.setting-group-input,
+.group-number-input {
+    width: 64px;
+    padding: 9px 4px;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
 }
 
 .setting-save-button,
-.setting-delete-button,
-.add-item-area button {
-    flex: 0 0 auto;
-    padding: 9px 10px;
+.setting-delete-button {
+    width: 54px;
+    padding: 9px 4px;
     border: none;
     border-radius: 8px;
     background-color: #eeeeee;
-    font-size: 14px;
+    font-size: 13px;
     cursor: pointer;
 }
 
 .add-item-area {
-    display: flex;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 64px 54px;
+    gap: 6px;
     margin-top: 14px;
     padding-top: 14px;
     border-top: 1px solid #dddddd;
 }
 
-.add-item-area input {
+.add-item-area input[type="text"] {
     min-width: 0;
-    flex: 1;
-    padding: 10px;
+    width: 100%;
+    padding: 10px 8px;
     border: 1px solid #cccccc;
     border-radius: 8px;
+    font-size: 14px;
+}
+
+.add-item-area button {
+    width: 54px;
+    padding: 9px 4px;
+    border: none;
+    border-radius: 8px;
+    background-color: #eeeeee;
+    font-size: 13px;
+    cursor: pointer;
 }
 
 .settings-note {
     margin-top: 28px;
     color: #666666;
     font-size: 12px;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 .worker-setting-area {
@@ -339,4 +383,146 @@ h1 {
     color: #666666;
     font-size: 12px;
     line-height: 1.5;
+}
+
+/* ============================================================
+   分類No. 色分け
+   1～8まで固定色。9以降は1～8を循環利用。
+   ============================================================ */
+
+.group-1 {
+    background-color: #dbeafe;
+    border-color: #93c5fd;
+}
+
+.group-2 {
+    background-color: #dcfce7;
+    border-color: #86efac;
+}
+
+.group-3 {
+    background-color: #ffedd5;
+    border-color: #fdba74;
+}
+
+.group-4 {
+    background-color: #f3e8ff;
+    border-color: #d8b4fe;
+}
+
+.group-5 {
+    background-color: #fee2e2;
+    border-color: #fca5a5;
+}
+
+.group-6 {
+    background-color: #fef9c3;
+    border-color: #fde047;
+}
+
+.group-7 {
+    background-color: #cffafe;
+    border-color: #67e8f9;
+}
+
+.group-8 {
+    background-color: #fce7f3;
+    border-color: #f9a8d4;
+}
+
+.group-1.selected {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
+.group-2.selected {
+    background-color: #16a34a;
+    border-color: #16a34a;
+    color: #ffffff;
+}
+
+.group-3.selected {
+    background-color: #ea580c;
+    border-color: #ea580c;
+    color: #ffffff;
+}
+
+.group-4.selected {
+    background-color: #9333ea;
+    border-color: #9333ea;
+    color: #ffffff;
+}
+
+.group-5.selected {
+    background-color: #dc2626;
+    border-color: #dc2626;
+    color: #ffffff;
+}
+
+.group-6.selected {
+    background-color: #ca8a04;
+    border-color: #ca8a04;
+    color: #ffffff;
+}
+
+.group-7.selected {
+    background-color: #0891b2;
+    border-color: #0891b2;
+    color: #ffffff;
+}
+
+.group-8.selected {
+    background-color: #db2777;
+    border-color: #db2777;
+    color: #ffffff;
+}
+
+/* 設定画面の分類No.入力欄にも同じ色を適用 */
+.setting-group-input.group-1,
+.group-number-input.group-1 {
+    background-color: #dbeafe;
+    border-color: #93c5fd;
+}
+
+.setting-group-input.group-2,
+.group-number-input.group-2 {
+    background-color: #dcfce7;
+    border-color: #86efac;
+}
+
+.setting-group-input.group-3,
+.group-number-input.group-3 {
+    background-color: #ffedd5;
+    border-color: #fdba74;
+}
+
+.setting-group-input.group-4,
+.group-number-input.group-4 {
+    background-color: #f3e8ff;
+    border-color: #d8b4fe;
+}
+
+.setting-group-input.group-5,
+.group-number-input.group-5 {
+    background-color: #fee2e2;
+    border-color: #fca5a5;
+}
+
+.setting-group-input.group-6,
+.group-number-input.group-6 {
+    background-color: #fef9c3;
+    border-color: #fde047;
+}
+
+.setting-group-input.group-7,
+.group-number-input.group-7 {
+    background-color: #cffafe;
+    border-color: #67e8f9;
+}
+
+.setting-group-input.group-8,
+.group-number-input.group-8 {
+    background-color: #fce7f3;
+    border-color: #f9a8d4;
 }
