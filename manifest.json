@@ -1,0 +1,19 @@
+{
+  "name": "設備別 行動記録",
+  "short_name": "設備行動記録",
+  "description": "対象設備と行動を選択して業務行動を記録するPWA",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

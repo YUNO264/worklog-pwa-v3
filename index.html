@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>設備別 行動記録</title>
+
+    <link rel="stylesheet" href="./style.css?v=1">
+    <link rel="manifest" href="./manifest.json">
+
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="設備行動記録">
+</head>
+
+<body>
+    <main class="app">
+        <h1>設備別 行動記録</h1>
+
+        <div class="time" id="current-time">--:--:--</div>
+
+        <section class="selection-section">
+            <h2>1. 対象設備</h2>
+            <div class="button-area equipment-area" id="equipment-button-area"></div>
+
+            <div class="selected-area">
+                選択設備：
+                <span id="selected-equipment">未選択</span>
+            </div>
+        </section>
+
+        <section class="selection-section">
+            <h2>2. 行動</h2>
+            <div class="button-area action-area" id="action-button-area"></div>
+
+            <div class="selected-area">
+                選択行動：
+                <span id="selected-action">未選択</span>
+            </div>
+        </section>
+
+        <button class="record-button" id="record-button" disabled>
+            記録する
+        </button>
+
+        <button id="settings-button" class="settings-button">
+            ⚙ 設定
+        </button>
+
+        <section class="history">
+            <div class="history-header">
+                <h2>本日の履歴</h2>
+
+                <button id="undo-button" class="undo-button">
+                    直前の記録を取り消す
+                </button>
+            </div>
+
+            <div id="history-list">
+                <p>まだ記録はありません。</p>
+            </div>
+        </section>
+
+        <button class="csv-button" id="csv-button">
+            CSV出力
+        </button>
+    </main>
+
+    <!-- 設定画面 -->
+    <div id="settings-screen" class="settings-screen hidden">
+        <div class="settings-inner">
+            <div class="settings-header">
+                <h2>設定</h2>
+
+                <button id="settings-close-button" class="settings-close-button">
+                    閉じる
+                </button>
+            </div>
+
+            <section class="settings-section">
+                <h3>設備設定</h3>
+
+                <div id="equipment-settings-list"></div>
+
+                <div class="add-item-area">
+                    <input
+                        type="text"
+                        id="new-equipment-name"
+                        placeholder="新しい設備名"
+                        maxlength="30"
+                    >
+
+                    <button id="add-equipment-button">
+                        追加
+                    </button>
+                </div>
+            </section>
+
+            <section class="settings-section">
+                <h3>行動設定</h3>
+
+                <div id="action-settings-list"></div>
+
+                <div class="add-item-area">
+                    <input
+                        type="text"
+                        id="new-action-name"
+                        placeholder="新しい行動名"
+                        maxlength="30"
+                    >
+
+                    <button id="add-action-button">
+                        追加
+                    </button>
+                </div>
+            </section>
+
+            <p class="settings-note">
+                ※ 設備・行動の追加／削除により、選択ボタンの個数を変更できます。
+                過去の行動記録は、設備・行動の設定を削除しても残ります。
+            </p>
+        </div>
+    </div>
+
+    <script src="./app.js?v=1"></script>
+</body>
+</html>

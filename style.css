@@ -1,0 +1,293 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: #f2f2f2;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+.app {
+    width: 100%;
+    max-width: 520px;
+    min-height: 100vh;
+    margin: 0 auto;
+    padding: 16px;
+    background-color: #ffffff;
+}
+
+h1 {
+    margin: 4px 0 8px;
+    text-align: center;
+    font-size: 26px;
+}
+
+.time {
+    margin-bottom: 18px;
+    text-align: center;
+    font-size: 34px;
+    font-weight: 700;
+}
+
+.selection-section {
+    margin-top: 18px;
+}
+
+.selection-section h2 {
+    margin: 0 0 10px;
+    font-size: 18px;
+}
+
+.button-area {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+}
+
+.equipment-button,
+.action-button {
+    height: 48px;
+    min-width: 0;
+    padding: 0 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    background-color: #eeeeee;
+
+    font-size: 14px;
+    line-height: 1.15;
+    text-align: center;
+
+    cursor: pointer;
+    overflow-wrap: anywhere;
+}
+
+.equipment-button:hover,
+.action-button:hover {
+    background-color: #dddddd;
+}
+
+.equipment-button.selected,
+.action-button.selected {
+    background-color: #1976d2;
+    border-color: #1976d2;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.selected-area {
+    margin-top: 9px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+    font-size: 15px;
+}
+
+.record-button {
+    width: 100%;
+    min-height: 58px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 10px;
+    background-color: #1976d2;
+    color: #ffffff;
+    font-size: 21px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.record-button:disabled {
+    background-color: #c7c7c7;
+    color: #666666;
+    cursor: default;
+}
+
+.settings-button {
+    display: block;
+    margin: 10px auto 0;
+    padding: 8px 18px;
+    border: none;
+    border-radius: 8px;
+    background-color: #eeeeee;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.history {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #cccccc;
+}
+
+.history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.history-header h2 {
+    margin: 0;
+    font-size: 19px;
+}
+
+.undo-button {
+    padding: 8px 10px;
+    border: none;
+    border-radius: 8px;
+    background-color: #eeeeee;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    padding: 11px 0;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.history-text {
+    min-width: 0;
+    flex: 1;
+    font-size: 15px;
+    overflow-wrap: anywhere;
+}
+
+.delete-button {
+    flex: 0 0 auto;
+    padding: 6px 9px;
+    border: none;
+    border-radius: 6px;
+    background-color: #eeeeee;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.csv-button {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 18px;
+    border: none;
+    border-radius: 10px;
+    background-color: #eeeeee;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* 設定画面 */
+.settings-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    overflow-y: auto;
+    background-color: #f2f2f2;
+}
+
+.hidden {
+    display: none;
+}
+
+.settings-inner {
+    width: 100%;
+    max-width: 520px;
+    min-height: 100vh;
+    margin: 0 auto;
+    padding: 16px;
+    background-color: #ffffff;
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.settings-header h2 {
+    margin: 0;
+    font-size: 23px;
+}
+
+.settings-close-button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    background-color: #eeeeee;
+    cursor: pointer;
+}
+
+.settings-section {
+    margin-top: 24px;
+}
+
+.settings-section h3 {
+    margin: 0 0 12px;
+    font-size: 18px;
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px;
+}
+
+.setting-input {
+    min-width: 0;
+    flex: 1;
+    padding: 9px 10px;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+.setting-save-button,
+.setting-delete-button,
+.add-item-area button {
+    flex: 0 0 auto;
+    padding: 9px 10px;
+    border: none;
+    border-radius: 8px;
+    background-color: #eeeeee;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.add-item-area {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #dddddd;
+}
+
+.add-item-area input {
+    min-width: 0;
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+}
+
+.settings-note {
+    margin-top: 28px;
+    color: #666666;
+    font-size: 12px;
+    line-height: 1.5;
+}
