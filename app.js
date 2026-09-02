@@ -64,21 +64,39 @@ let db = null;
 // 既存の使い方を壊さないため初期分類はすべて1
 // -------------------------
 const DEFAULT_EQUIPMENTS = [
-    { name: "設備A", group: 1 },
-    { name: "設備B", group: 1 },
-    { name: "設備C", group: 1 },
-    { name: "設備D", group: 1 }
+    { name: "ＧＴＡ", group: 1 },
+    { name: "ＴＦＡ", group: 1 },
+    { name: "ＣＨＡ", group: 1 },
+    { name: "旧ＣＮＡ", group: 1 },
+    { name: "新ＣＮＡ", group: 1 },
+    { name: "投影機＿角度あり", group: 2 },
+    { name: "投影機＿角度なし", group: 2 },
+    { name: "外周振れ", group: 2 },
+    { name: "刃厚・バランス", group: 2 },
+    { name: "粗さ計", group: 2 },
+    { name: "横逃げ", group: 2 },
+    { name: "顕微鏡", group: 2 },
+    { name: "マイクロスコープ", group: 2 },
+    { name: "作業者", group: 3 }
 ];
 
 const DEFAULT_ACTIONS = [
-    { name: "加工", group: 1 },
+    { name: "積込み", group: 1 },
     { name: "段取り", group: 1 },
-    { name: "測定", group: 1 },
+    { name: "セット", group: 1 },
+    { name: "１枚自動", group: 1 },
+    { name: "全自動", group: 1 },
+    { name: "手替え", group: 1 },
     { name: "補正", group: 1 },
-    { name: "清掃", group: 1 },
-    { name: "トラブル", group: 1 },
-    { name: "待機", group: 1 },
-    { name: "その他", group: 1 }
+    { name: "抜取り確認", group: 1 },
+    { name: "測定＿角度", group: 2 },
+    { name: "測定＿寸法", group: 2 },
+    { name: "測定＿外周", group: 2 },
+    { name: "測定＿左右差", group: 2 },
+    { name: "移動", group: 3 },
+    { name: "会議", group: 3 },
+    { name: "清掃", group: 3 },
+    { name: "その他", group: 3 }
 ];
 
 // ============================================================

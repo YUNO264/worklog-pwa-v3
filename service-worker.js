@@ -1,10 +1,10 @@
-const CACHE_NAME = "equipment-worklog-cache-v6";
+const CACHE_NAME = "equipment-worklog-cache-v7";
 
 const CORE_FILES = [
     "./",
     "./index.html",
-    "./style.css?v=6",
-    "./app.js?v=6",
+    "./style.css?v=7",
+    "./app.js?v=7",
     "./manifest.json",
     "./icons/icon.svg"
 ];
