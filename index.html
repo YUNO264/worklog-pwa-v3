@@ -6,7 +6,7 @@
 
     <title>設備別 行動記録</title>
 
-    <link rel="stylesheet" href="./style.css?v=2">
+    <link rel="stylesheet" href="./style.css?v=3">
     <link rel="manifest" href="./manifest.json">
 
     <meta name="theme-color" content="#ffffff">
@@ -69,7 +69,29 @@
                 </button>
             </div>
 
+            
             <section class="settings-section">
+                <h3>作業者設定</h3>
+
+                <div class="worker-setting-area">
+                    <input
+                        type="text"
+                        id="worker-name"
+                        placeholder="作業者名を入力"
+                        maxlength="30"
+                    >
+
+                    <button id="save-worker-name-button">
+                        保存
+                    </button>
+                </div>
+
+                <div id="worker-name-status" class="worker-name-status">
+                    未設定
+                </div>
+            </section>
+
+<section class="settings-section">
                 <h3>設備設定</h3>
 
                 <div id="equipment-settings-list"></div>
@@ -114,6 +136,6 @@
         </div>
     </div>
 
-    <script src="./app.js?v=2"></script>
+    <script src="./app.js?v=3"></script>
 </body>
 </html>

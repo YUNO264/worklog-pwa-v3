@@ -30,6 +30,10 @@ const addEquipmentButton = document.getElementById("add-equipment-button");
 const newActionName = document.getElementById("new-action-name");
 const addActionButton = document.getElementById("add-action-button");
 
+const workerNameInput = document.getElementById("worker-name");
+const saveWorkerNameButton = document.getElementById("save-worker-name-button");
+const workerNameStatus = document.getElementById("worker-name-status");
+
 // -------------------------
 // 選択状態
 // -------------------------
@@ -70,6 +74,49 @@ const DEFAULT_ACTIONS = [
     "待機",
     "その他"
 ];
+
+// ============================================================
+// 作業者設定
+// 端末ごとにlocalStorageへ保存
+// ============================================================
+const WORKER_NAME_KEY = "EquipmentWorkLogWorkerName";
+
+function loadWorkerName() {
+    const savedName = localStorage.getItem(WORKER_NAME_KEY) || "";
+
+    workerNameInput.value = savedName;
+
+    if (savedName === "") {
+        workerNameStatus.textContent = "未設定";
+    } else {
+        workerNameStatus.textContent = "保存中の作業者名：" + savedName;
+    }
+}
+
+saveWorkerNameButton.addEventListener("click", function () {
+    const workerName = workerNameInput.value.trim();
+
+    if (workerName === "") {
+        localStorage.removeItem(WORKER_NAME_KEY);
+        workerNameStatus.textContent = "未設定";
+        alert("作業者名の設定を解除しました。");
+        return;
+    }
+
+    localStorage.setItem(WORKER_NAME_KEY, workerName);
+    workerNameStatus.textContent = "保存中の作業者名：" + workerName;
+
+    alert("作業者名を保存しました。");
+});
+
+function getWorkerNameForFile() {
+    const workerName = localStorage.getItem(WORKER_NAME_KEY) || "未設定";
+
+    return workerName
+        .replace(/[\\/:*?"<>|]/g, "_")
+        .replace(/\s+/g, "_")
+        .trim();
+}
 
 // ============================================================
 // 時計
@@ -443,8 +490,10 @@ csvButton.addEventListener("click", function () {
 
             const now = new Date();
 
+            const workerNameForFile = getWorkerNameForFile();
+
             const fileName =
-                `EquipmentWorkLog_${formatDateCompact(now)}_${formatTimeCompact(now)}.csv`;
+                `EquipmentWorkLog_${workerNameForFile}_${formatDateCompact(now)}_${formatTimeCompact(now)}.csv`;
 
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
@@ -847,6 +896,7 @@ function escapeCSV(value) {
 // ============================================================
 openDatabase();
 updateRecordButtonState();
+loadWorkerName();
 
 // ============================================================
 // Service Worker登録

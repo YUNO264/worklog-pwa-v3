@@ -284,3 +284,33 @@ h1 {
     font-size: 12px;
     line-height: 1.5;
 }
+
+.worker-setting-area {
+    display: flex;
+    gap: 8px;
+}
+
+.worker-setting-area input {
+    min-width: 0;
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+.worker-setting-area button {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 8px;
+    background-color: #eeeeee;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.worker-name-status {
+    margin-top: 8px;
+    color: #666666;
+    font-size: 13px;
+}
