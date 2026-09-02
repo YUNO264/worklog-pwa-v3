@@ -6,7 +6,7 @@
 
     <title>設備別 行動記録</title>
 
-    <link rel="stylesheet" href="./style.css?v=3">
+    <link rel="stylesheet" href="./style.css?v=4">
     <link rel="manifest" href="./manifest.json">
 
     <meta name="theme-color" content="#ffffff">
@@ -129,6 +129,28 @@
                 </div>
             </section>
 
+            
+            <section class="settings-section storage-status-section">
+                <h3>データ保存状況</h3>
+
+                <div class="storage-status-box">
+                    <div class="storage-status-row">
+                        <span>記録件数</span>
+                        <strong id="record-count">-- 件</strong>
+                    </div>
+
+                    <div class="storage-status-row">
+                        <span>使用容量</span>
+                        <strong id="storage-usage">--</strong>
+                    </div>
+                </div>
+
+                <div class="storage-status-note">
+                    ※ 使用容量は、このPWAが使用しているブラウザ保存領域全体の推定値です。
+                </div>
+            </section>
+
+
             <p class="settings-note">
                 ※ 設備・行動の追加／削除により、選択ボタンの個数を変更できます。
                 過去の行動記録は、設備・行動の設定を削除しても残ります。
@@ -136,6 +158,6 @@
         </div>
     </div>
 
-    <script src="./app.js?v=3"></script>
+    <script src="./app.js?v=4"></script>
 </body>
 </html>

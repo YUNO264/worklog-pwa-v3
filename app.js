@@ -34,6 +34,9 @@ const workerNameInput = document.getElementById("worker-name");
 const saveWorkerNameButton = document.getElementById("save-worker-name-button");
 const workerNameStatus = document.getElementById("worker-name-status");
 
+const recordCount = document.getElementById("record-count");
+const storageUsage = document.getElementById("storage-usage");
+
 // -------------------------
 // 選択状態
 // -------------------------
@@ -514,12 +517,67 @@ csvButton.addEventListener("click", function () {
 });
 
 // ============================================================
+// データ保存状況
+// ============================================================
+function updateStorageStatus() {
+    if (!db) {
+        recordCount.textContent = "-- 件";
+        storageUsage.textContent = "--";
+        return;
+    }
+
+    // 記録件数
+    const transaction = db.transaction(LOG_STORE, "readonly");
+    const store = transaction.objectStore(LOG_STORE);
+    const countRequest = store.count();
+
+    countRequest.onsuccess = function () {
+        recordCount.textContent = countRequest.result.toLocaleString("ja-JP") + " 件";
+    };
+
+    countRequest.onerror = function () {
+        recordCount.textContent = "取得失敗";
+    };
+
+    // 使用容量（Storage APIの推定値）
+    if (navigator.storage && navigator.storage.estimate) {
+        navigator.storage.estimate()
+            .then(function (estimate) {
+                const usage = estimate.usage || 0;
+                storageUsage.textContent = formatBytes(usage);
+            })
+            .catch(function () {
+                storageUsage.textContent = "取得失敗";
+            });
+    } else {
+        storageUsage.textContent = "未対応";
+    }
+}
+
+function formatBytes(bytes) {
+    if (bytes < 1024) {
+        return bytes + " B";
+    }
+
+    if (bytes < 1024 * 1024) {
+        return (bytes / 1024).toFixed(1) + " KB";
+    }
+
+    if (bytes < 1024 * 1024 * 1024) {
+        return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    }
+
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+}
+
+// ============================================================
 // 設定画面
 // ============================================================
 settingsButton.addEventListener("click", function () {
     settingsScreen.classList.remove("hidden");
     loadEquipmentSettings();
     loadActionSettings();
+    updateStorageStatus();
 });
 
 settingsCloseButton.addEventListener("click", function () {
