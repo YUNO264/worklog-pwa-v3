@@ -65,14 +65,13 @@ let db = null;
 // -------------------------
 const DEFAULT_EQUIPMENTS = [
     { name: "ＧＴＡ", group: 1 },
-    { name: "ＴＦＡ", group: 1 },
-    { name: "新ＣＨＡ", group: 1 },
-    { name: "旧ＣＨＡ", group: 1 },
-    { name: "新ＣＮＡ", group: 1 },
-    { name: "旧ＣＮＡ", group: 1 },
-    { name: "側面測定", group: 2 },
-    { name: "刃付測定", group: 3 },
-    { name: "作業者", group: 4 }
+    { name: "ＴＦＡ", group: 2 },
+    { name: "新ＣＨＡ", group: 2 },
+    { name: "旧ＣＨＡ", group: 2 },
+    { name: "新ＣＮＡ", group: 3 },
+    { name: "旧ＣＮＡ", group: 3 },
+    { name: "設備メンテ", group: 4 },
+    { name: "作業者", group: 5 }
 ];
 
 const DEFAULT_ACTIONS = [
@@ -81,23 +80,23 @@ const DEFAULT_ACTIONS = [
     { name: "全自動", group: 1 },
     { name: "手替え", group: 1 },
     { name: "確認", group: 1 },
-    { name: "補正", group: 1 },
-    { name: "刃厚・バランス", group: 2 },
-    { name: "アサリ", group: 2 },
-    { name: "横逃げ", group: 2 },
-    { name: "粗さ", group: 2 },
-    { name: "投影機_角度あり", group: 3 },
-    { name: "投影機＿角度なし", group: 3 },
-    { name: "始終刃段差", group: 3 },
-    { name: "C面", group: 3 },
-    { name: "ノッチ", group: 3 },
-    { name: "粗さ", group: 3 },
-    { name: "画像処理", group: 3 },
-    { name: "積込み", group: 4 },
-    { name: "段取り", group: 4 },
-    { name: "移動", group: 4 },
-    { name: "ミーティング", group: 4 },
-    { name: "待機", group: 4 }
+    { name: "積込", group: 1 },
+    { name: "セット", group: 2 },
+    { name: "全自動", group: 2 },
+    { name: "手替え", group: 2 },
+    { name: "確認", group: 2 },
+    { name: "セット", group: 3 },
+    { name: "1枚自動", group: 3 },
+    { name: "全自動", group: 3 },
+    { name: "手替え", group: 3 },
+    { name: "確認", group: 3 },
+    { name: "砥石交換", group: 4 },
+    { name: "メンテナンス", group: 4 },
+    { name: "段取", group: 5 },
+    { name: "ストッカー移動", group: 5 },
+    { name: "待機", group: 5 },
+    { name: "ミーティング", group: 5 },
+    { name: "その他", group: 5 }
 ];
 
 // ============================================================
